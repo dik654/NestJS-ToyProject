@@ -1,19 +1,21 @@
 import 'dotenv/config';
 import { CacheModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { RedisService } from './app.service';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { AppService } from './app.service';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
-    RedisModule.forRoot({
-      config: {
-        url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-        password: process.env.REDIS_PASSWORD, 
-      },
-    })
+    CacheModule.registerAsync({
+      useFactory: () => ({
+        store: redisStore,
+        host: 'localhost',
+        port: 6379,
+        ttl: 0,
+      })
+    }),
   ],
   controllers: [AppController],
-  providers: [RedisService],
+  providers: [AppService],
 })
 export class AppModule {}

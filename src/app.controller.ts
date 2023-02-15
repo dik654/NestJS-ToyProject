@@ -1,18 +1,23 @@
-import { CACHE_MANAGER, Controller, Get, Inject } from '@nestjs/common';
-import { InjectRedis, Redis} from '@nestjs-modules/ioredis';
-import { Cache } from 'cache-manager'
-import { AppService } from './app.service';
+import { CACHE_MANAGER, Param, Controller, Body, Get, Post, Inject } from '@nestjs/common';
+import { Cache } from 'cache-manager';
+import { PostDto } from './dto/redisArgStructure.dto';
 
 @Controller()
 export class AppController {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: CacheQueryOptions,
-    @InjectRedis() private readonly redis: Redis,
-    private readonly appService: AppService
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Get() 
-  getHello():  string {
-    return this.appService.getHello();
+  @Get('/:key')
+  async getValue(@Param('key') key: string): Promise<string>  {
+    const value: string = await this.cacheManager.get(key);
+    console.log(value);
+    return value;
   }
-}
+
+  @Post()
+  async setValue(@Body() PostDto: PostDto) {
+    console.log(PostDto)
+    await this.cacheManager.set(PostDto.key, PostDto.value);
+  }
+} 
